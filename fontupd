@@ -1,0 +1,11 @@
+#!/bin/sh
+
+dir=${HOME}/.fonts
+
+mkdir -p ${dir}
+chmod 755 ${dir}
+cd ${dir}
+chmod 644 *
+mkfontdir
+xset fp+ ${dir}
+xset fp rehash

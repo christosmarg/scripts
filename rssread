@@ -1,0 +1,4 @@
+#!/bin/sh
+
+sfeed_update
+sfeed_curses ${HOME}/.sfeed/feeds/*

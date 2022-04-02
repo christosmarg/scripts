@@ -1,0 +1,46 @@
+#!/bin/sh
+
+usage()
+{
+	echo "usage: ${0##*/} [-u] [-c cpu] [-C com] [-d disk] [-i img] [-m mem] [-t tap] name" 1>&2
+	exit 1
+}
+
+cpu="2"
+mem="2G"
+disk="disk.img"
+tap="tap0"
+
+# TODO: opt: disname, lpc, xhci
+while getopts c:C:d:i:m:t:u arg; do
+case "${arg}" in
+	c) cpu="${OPTARG}" ;;
+	C) com="${OPTARG}" ;;
+	d) disksiz="${OPTARG}" ;;
+	i) img="${OPTARG}" ;;
+	m) mem="${OPTARG}" ;;
+	t) tap="${OPTARG}" ;;
+	u) uefi="-l bootrom,/usr/local/share/uefi-firmware/BHYVE_UEFI.fd" ;;
+	*) usage ;;
+esac
+done
+shift $((OPTIND - 1))
+
+name="${1}"
+test -z "${name}" && usage
+
+test -n "${disksiz}" && truncate -s "${disksiz}" ${disk}
+ifconfig "${tap}" up
+
+bhyve -c ${cpu} -m ${mem} -wH \
+        -s 0,hostbridge \
+        `test -n "${img}" && echo "-s 3,ahci-cd,${img}"` \
+        -s 4,ahci-hd,${disk} \
+        -s 5,virtio-net,${tap} \
+        -s 29,fbuf,tcp=0.0.0.0:5900,w=800,h=600,wait \
+        -s 30,xhci,tablet \
+        -s 31,lpc \
+	`test -n "${com}" && echo "-l com1,${com}"` \
+        `test -n "${uefi}" && echo ${uefi}` \
+        ${name}
+

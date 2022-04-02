@@ -1,0 +1,6 @@
+#!/bin/sh
+
+branch=$(git branch --show-current)
+for remote in $(git remote); do
+	git push ${remote} ${branch}
+done

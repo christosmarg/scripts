@@ -1,0 +1,74 @@
+#!/bin/sh
+
+# ffmpeg and my `tag` script required.
+main()
+{
+	test ${#} -ne 2 && usage
+
+	auin="${1}"
+	local tfile="${2}"
+	total="$(wc -l < "${tfile}")"
+	# The extension must exist in `tag`.
+	ext="${1#*.}"
+
+	xread "Album/book title: " album
+	xread "Artist/author: " author
+	xread "Publication year: " year
+
+	namefmt="$(fmt_name "${album}")"
+	mkdir -p "${namefmt}" || exit 1
+
+	while read -r line; do
+		end="$(echo "${line}" | cut -d' ' -f1)"
+		test -n "${start}" && split_file
+		title="$(echo "${line}" | cut -d' ' -f 2-)"
+		titlefmt="$(fmt_name "${title}")"
+		track="$((track+1))"
+		start="${end}"
+	done < "${tfile}"
+
+	# The last track must be done outside the loop.
+	split_file
+}
+
+usage()
+{
+	echo "usage: ${0##*/} audio timecode_file" 1>&2 && exit 1
+}
+
+xread()
+{
+	printf "%s" "${1}" && read -r ${2}
+}
+
+fmt_name()
+{
+	echo "${1}" | iconv -cf UTF-8 -t ASCII//TRANSLIT |
+	tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' |
+	sed "s/-\+/-/g;s/\(^-\|-\$\)//g"
+}
+
+split_file()
+{
+	echo "From ${start} to ${end}; ${track} ${title}"
+	echo "Splitting \"${title}\"..."
+	ofile="${namefmt}/$(printf "%.2d" "${track}")-${titlefmt}.${ext}"
+	ffmpeg \
+		-nostdin -y -loglevel -8 \
+		-i "${auin}" \
+		-ss "${start}" \
+		`test ${track} -eq ${total} || echo "-to ${end}"` \
+		-vn -c copy \
+		"${ofile}" &&
+	echo "Tagging \"${title}\"..." &&
+	tag \
+		-a "${author}" \
+		-A "${album}" \
+		-t "${title}" \
+		-n "${track}" \
+		-N "${total}" \
+		-d "${year}" \
+		"${ofile}"
+}
+
+main "${@}"

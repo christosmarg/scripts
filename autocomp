@@ -1,0 +1,4 @@
+#!/bin/sh
+
+pkill -f "entr -n doccomp"
+echo "${1}" | entr -n doccomp "${1}"

@@ -1,0 +1,34 @@
+#!/bin/sh
+
+usage()
+{
+	echo "usage: ${0##*/} [-d dir] file" 1>&2 && exit 1
+}
+
+while getopts d: arg; do
+case "${arg}" in
+	d) dir="${OPTARG}" ;;
+	*) usage ;;
+esac
+done
+shift "$(expr ${OPTIND} - 1)"
+
+archive="$(readlink -f ${1})"
+test -z "${archive}" && usage
+test -n "${dir}" && mkdir -p "${dir}" && cd "${dir}"
+
+case "${archive}" in
+	*.tar.bz2|*.tbz2)	tar xvjf "${archive}" ;;
+	*.tar.xz)		tar -xf "${archive}" ;;
+	*.tar.gz|*.tgz)		tar xvzf "${archive}" ;;
+	*.lzma)			unlzma "${archive}" ;;
+	*.bz2)			bunzip2 "${archive}" ;;
+	*.rar)			unrar x -ad "${archive}" ;;
+	*.gz)			gunzip "${archive}" ;;
+	*.tar)			tar xvf "${archive}" ;;
+	*.zip)			unzip "${archive}" ;;
+	*.Z)			uncompress "${archive}" ;;
+	*.7z)			7z x "${archive}" ;;
+	*.xz)			unxz "${archive}" ;;
+	*) echo "i don't know how to extract this" 1>&2 ;;
+esac
