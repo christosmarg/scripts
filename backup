@@ -51,11 +51,8 @@ nsnaps=$(zfs list -t snapshot -o name ${dst_pool} | sed 1d | wc -l)
 # Make appropriate checks before creating new snapshot.
 # If the snapshot already exists, either renew it or exit.
 if [ "${src_last_snap}" = "${new_snap}" ]; then
-	if [ ${f_snap} -eq 1 ]; then
-		zfs destroy -r ${src_pool}@${new_snap}
-	else
-		err "snapshot ${new_snap} exists already"
-	fi
+	test ${f_snap} -eq 1 || err "snapshot ${new_snap} exists already"
+	zfs destroy -r ${src_pool}@${new_snap}
 fi
 zfs snapshot -r ${src_pool}@${new_snap}
 
