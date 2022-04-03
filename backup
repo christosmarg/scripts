@@ -14,7 +14,7 @@ err()
 
 pool_exists()
 {
-	local foo=$(zpool list | sed 1d | awk '{print $1}' | grep -x "${1}")
+	local foo=$(zpool list -o name | sed 1d | grep -x "${1}")
 	test -z "${foo}" && err "pool ${1} does not exist"
 }
 
@@ -44,21 +44,27 @@ pool_exists "${src_pool}"
 pool_exists "${dst_pool}"
 
 new_snap="$(date +%Y%m%d)"
+src_last_snap=$(last_snap "${src_pool}")
 dst_last_snap=$(last_snap "${dst_pool}")
 nsnaps=$(zfs list -t snapshot -o name ${dst_pool} | sed 1d | wc -l)
 
-# Overwrite snapshot if it already exists when the -r option is passed,
+# Make appropriate checks before creating new snapshot.
+# If the snapshot already exists, either renew it or exit.
+if [ "${src_last_snap}" = "${new_snap}" ]; then
+	if [ ${f_snap} -eq 1 ]; then
+		zfs destroy -r ${src_pool}@${new_snap}
+	else
+		err "snapshot ${new_snap} exists already"
+	fi
+fi
+zfs snapshot -r ${src_pool}@${new_snap}
+
+# Overwrite dst snapshot if it already exists when the -r option is passed,
 # otherwise, exit. Also make sure there are more than 1 snapshots before we
 # delete anything.
 if [ ! ${nsnaps} -le 1 ] && [ "${dst_last_snap}" = "${new_snap}" ]; then
 	test ${f_snap} -eq 1 || err "snapshot ${new_snap} exists already"
 	zfs destroy -r ${dst_pool}@${new_snap}
-fi
-
-# Create new src snapshots when the -r option is passed.
-if [ ${f_snap} -eq 1 ]; then
-	zfs destroy -r ${src_pool}@${new_snap}
-	zfs snapshot -r ${src_pool}@${new_snap}
 fi
 
 if [ ${f_incr} -eq 1 ]; then
