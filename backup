@@ -32,7 +32,7 @@ delete_existing_snap()
 	local last_snap=${2}
 
 	if [ "${last_snap}" = "${new_snap}" ]; then
-		test ${f_snap} -eq 1 || err "snapshot ${new_snap} exists already"
+		test ${f_snap} -eq 1 || err "snapshot ${pool}@${new_snap} exists already"
 		zfs destroy -r ${pool}@${new_snap}
 	fi
 }
@@ -66,10 +66,10 @@ delete_existing_snap "${src_pool}" "${src_last_snap}"
 zfs snapshot -r ${src_pool}@${new_snap}
 
 # Make sure dst has more than 1 snapshots before we delete anything.
-test ${nsnaps} -le 1 || delete_existing_snap "${dst_pool}" "${dst_last_snap}"
+#test ${nsnaps} -le 1 || delete_existing_snap "${dst_pool}" "${dst_last_snap}"
 
 if [ ${f_incr} -eq 1 ]; then
-	zfs send -RI ${src_pool}@${last_snap} ${src_pool}@${new_snap} | pv | zfs recv -Fu ${dst_pool}
+	zfs send -RI ${src_pool}@${dst_last_snap} ${src_pool}@${new_snap} | pv | zfs recv -Fu ${dst_pool}
 else
 	zfs send -R ${src_pool}@${new_snap} | pv | zfs recv -Fu ${dst_pool}
 fi
