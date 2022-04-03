@@ -6,10 +6,10 @@ usage()
 	exit 1
 }
 
-drive_exists()
+pool_exists()
 {
 	local foo=$(zpool list | sed 1d | awk '{print $1}' | grep -x "${1}")
-	test -z "${foo}" && echo "${0##*/}: drive ${1} does not exist" && exit 1
+	test -z "${foo}" && echo "${0##*/}: pool ${1} does not exist" && exit 1
 } 
 
 f_incr=0
@@ -24,26 +24,26 @@ shift $((OPTIND - 1))
 
 test ${#} -ne 2 && usage
 
-from_drv="${1}"
-to_drv="${2}"
+src_pool="${1}"
+dst_pool="${2}"
 
-drive_exists "${from_drv}"
-drive_exists "${to_drv}"
+pool_exists "${src_pool}"
+pool_exists "${dst_pool}"
 
 new_snap="$(date +%Y%m%d)"
-last_snap="$(zfs list -t snapshot -o name ${to_drv} | cut -f2 -d'@' | tail -1)"
-nsnaps=$(zfs list -t snapshot -o name ${to_drv} | sed 1d | wc -l)
+last_snap="$(zfs list -t snapshot -o name ${dst_pool} | cut -f2 -d'@' | tail -1)"
+nsnaps=$(zfs list -t snapshot -o name ${dst_pool} | sed 1d | wc -l)
 
 # make sure we don't have a snapshot already
 # also don't delete in case there's only one snap, otherwise we'll lose it all
 if [ ! ${nsnaps} -le 1 ] && [ "${last_snap}" = "${new_snap}" ]; then
-	zfs destroy -r ${to_drv}@${new_snap}
+	zfs destroy -r ${dst_pool}@${new_snap}
 fi
 # create new snapshot in case we had made one already today
-zfs destroy -r ${from_drv}@${new_snap}
-zfs snapshot -r ${from_drv}@${new_snap}
+zfs destroy -r ${src_pool}@${new_snap}
+zfs snapshot -r ${src_pool}@${new_snap}
 if [ ${f_incr} -eq 1 ]; then
-	zfs send -RI ${from_drv}@${last_snap} ${from_drv}@${new_snap} | pv | zfs recv -Fu ${to_drv}
+	zfs send -RI ${src_pool}@${last_snap} ${src_pool}@${new_snap} | pv | zfs recv -Fu ${dst_pool}
 else
-	zfs send -R ${from_drv}@${new_snap} | pv | zfs recv -Fu ${to_drv}
+	zfs send -R ${src_pool}@${new_snap} | pv | zfs recv -Fu ${dst_pool}
 fi
