@@ -15,12 +15,24 @@ err()
 pool_exists()
 {
 	local foo=$(zpool list -o name | sed 1d | grep -x "${1}")
+
 	test -z "${foo}" && err "pool ${1} does not exist"
 }
 
 last_snap()
 {
 	zfs list -t snapshot -o name "${1}" | cut -f2 -d'@' | tail -1
+}
+
+delete_existing_snap()
+{
+	local pool=${1}
+	local last_snap=${2}
+
+	if [ "${last_snap}" = "${new_snap}" ]; then
+		test ${f_snap} -eq 1 || err "snapshot ${new_snap} exists already"
+		zfs destroy -r ${pool}@${new_snap}
+	fi
 }
 
 f_incr=0	# Incremental backup
@@ -50,19 +62,13 @@ nsnaps=$(zfs list -t snapshot -o name ${dst_pool} | sed 1d | wc -l)
 
 # Make appropriate checks before creating new snapshot.
 # If the snapshot already exists, either renew it or exit.
-if [ "${src_last_snap}" = "${new_snap}" ]; then
-	test ${f_snap} -eq 1 || err "snapshot ${new_snap} exists already"
-	zfs destroy -r ${src_pool}@${new_snap}
-fi
+delete_existing_snap "${src_pool}" "${src_last_snap}"
 zfs snapshot -r ${src_pool}@${new_snap}
 
 # Overwrite dst snapshot if it already exists when the -r option is passed,
 # otherwise, exit. Also make sure there are more than 1 snapshots before we
 # delete anything.
-if [ ! ${nsnaps} -le 1 ] && [ "${dst_last_snap}" = "${new_snap}" ]; then
-	test ${f_snap} -eq 1 || err "snapshot ${new_snap} exists already"
-	zfs destroy -r ${dst_pool}@${new_snap}
-fi
+test ${nsnaps} -le 1 || delete_existing_snap "${dst_pool}" "${dst_last_snap}"
 
 if [ ${f_incr} -eq 1 ]; then
 	zfs send -RI ${src_pool}@${last_snap} ${src_pool}@${new_snap} | pv | zfs recv -Fu ${dst_pool}
