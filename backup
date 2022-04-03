@@ -1,0 +1,49 @@
+#!/bin/sh
+
+usage()
+{
+	echo "usage: ${0##*/} [-i] <from> <to>" 1>&2
+	exit 1
+}
+
+drive_exists()
+{
+	local foo=$(zpool list | sed 1d | awk '{print $1}' | grep -x "${1}")
+	test -z "${foo}" && echo "${0##*/}: drive ${1} does not exist" && exit 1
+} 
+
+f_incr=0
+
+while getopts i arg; do
+case "${arg}" in
+	i) f_incr=1 ;;
+	*) usage ;;
+esac
+done
+shift $((OPTIND - 1))
+
+test ${#} -ne 2 && usage
+
+from_drv="${1}"
+to_drv="${2}"
+
+drive_exists "${from_drv}"
+drive_exists "${to_drv}"
+
+new_snap="$(date +%Y%m%d)"
+last_snap="$(zfs list -t snapshot -o name ${to_drv} | cut -f2 -d'@' | tail -1)"
+nsnaps=$(zfs list -t snapshot -o name ${to_drv} | sed 1d | wc -l)
+
+# make sure we don't have a snapshot already
+# also don't delete in case there's only one snap, otherwise we'll lose it all
+if [ ! ${nsnaps} -le 1 ] && [ "${last_snap}" = "${new_snap}" ]; then
+	zfs destroy -r ${to_drv}@${new_snap}
+fi
+# create new snapshot in case we had made one already today
+zfs destroy -r ${from_drv}@${new_snap}
+zfs snapshot -r ${from_drv}@${new_snap}
+if [ ${f_incr} -eq 1 ]; then
+	zfs send -RI ${from_drv}@${last_snap} ${from_drv}@${new_snap} | pv | zfs recv -Fu ${to_drv}
+else
+	zfs send -R ${from_drv}@${new_snap} | pv | zfs recv -Fu ${to_drv}
+fi

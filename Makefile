@@ -2,6 +2,7 @@
 
 SCRIPTS = ausplit \
 	  autocomp \
+	  backup \
 	  batnfy \
 	  doccomp \
 	  docprev \
