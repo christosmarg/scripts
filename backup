@@ -2,21 +2,34 @@
 
 usage()
 {
-	echo "usage: ${0##*/} [-i] <from> <to>" 1>&2
+	echo "usage: ${0##*/} [-ir] <src> <dst>" 1>&2
+	exit 1
+}
+
+err()
+{
+	echo "${0##*/}: ${@}" 1>&2
 	exit 1
 }
 
 pool_exists()
 {
 	local foo=$(zpool list | sed 1d | awk '{print $1}' | grep -x "${1}")
-	test -z "${foo}" && echo "${0##*/}: pool ${1} does not exist" && exit 1
-} 
+	test -z "${foo}" && err "pool ${1} does not exist"
+}
 
-f_incr=0
+last_snap()
+{
+	zfs list -t snapshot -o name "${1}" | cut -f2 -d'@' | tail -1
+}
 
-while getopts i arg; do
+f_incr=0	# Incremental backup
+f_snap=0	# Renew snapshots in case they already exist
+
+while getopts ir arg; do
 case "${arg}" in
 	i) f_incr=1 ;;
+	r) f_snap=1 ;;
 	*) usage ;;
 esac
 done
@@ -31,17 +44,23 @@ pool_exists "${src_pool}"
 pool_exists "${dst_pool}"
 
 new_snap="$(date +%Y%m%d)"
-last_snap="$(zfs list -t snapshot -o name ${dst_pool} | cut -f2 -d'@' | tail -1)"
+dst_last_snap=$(last_snap "${dst_pool}")
 nsnaps=$(zfs list -t snapshot -o name ${dst_pool} | sed 1d | wc -l)
 
-# make sure we don't have a snapshot already
-# also don't delete in case there's only one snap, otherwise we'll lose it all
-if [ ! ${nsnaps} -le 1 ] && [ "${last_snap}" = "${new_snap}" ]; then
+# Overwrite snapshot if it already exists when the -r option is passed,
+# otherwise, exit. Also make sure there are more than 1 snapshots before we
+# delete anything.
+if [ ! ${nsnaps} -le 1 ] && [ "${dst_last_snap}" = "${new_snap}" ]; then
+	test ${f_snap} -eq 1 || err "snapshot ${new_snap} exists already"
 	zfs destroy -r ${dst_pool}@${new_snap}
 fi
-# create new snapshot in case we had made one already today
-zfs destroy -r ${src_pool}@${new_snap}
-zfs snapshot -r ${src_pool}@${new_snap}
+
+# Create new src snapshots when the -r option is passed.
+if [ ${f_snap} -eq 1 ]; then
+	zfs destroy -r ${src_pool}@${new_snap}
+	zfs snapshot -r ${src_pool}@${new_snap}
+fi
+
 if [ ${f_incr} -eq 1 ]; then
 	zfs send -RI ${src_pool}@${last_snap} ${src_pool}@${new_snap} | pv | zfs recv -Fu ${dst_pool}
 else
