@@ -9,6 +9,7 @@ SCRIPTS = ausplit \
 	  extr \
 	  fontupd \
 	  irssi_torconf \
+	  mntdroid \
 	  namefmt \
 	  newsboat_bookmark \
 	  passget \
@@ -19,6 +20,7 @@ SCRIPTS = ausplit \
 	  setscreens \
 	  sysact \
 	  tag \
+	  umntdroid \
 	  unix \
 	  upd \
 	  vdq \

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+MTPT="/mnt/droid"
+
+n=$(simple-mtpfs -l 2>/dev/null | dmenu -i -p "Available devices" | cut -f1 -d':')
+mkdir -p "${MTPT}/${n}"
+simple-mtpfs --device "${n}" -o allow_other "${MTPT}/${n}" | dmenu -p "Check" >/dev/null
+simple-mtpfs --device "${n}" -o allow_other "${MTPT}/${n}" &&
+echo "Android device mounted to: ${MTPT}/${n}" | nfy

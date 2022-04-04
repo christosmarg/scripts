@@ -1,0 +1,7 @@
+#!/bin/sh
+
+MTPT="/mnt/droid"
+
+n=$(simple-mtpfs -l 2>/dev/null | dmenu -i -p "Available devices" | cut -f1 -d':')
+umount "${MTPT}/${n}"
+rm -rf "${MTPT}/${n}"
