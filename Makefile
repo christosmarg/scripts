@@ -20,7 +20,6 @@ SCRIPTS = ausplit \
 	  setscreens \
 	  sysact \
 	  tag \
-	  umntdroid \
 	  unix \
 	  upd \
 	  vdq \
@@ -47,8 +46,8 @@ install: all
 	cp -f ${SCRIPTS} ${DESTDIR}${PREFIX}/bin
 	chmod 755 ${DESTDIR}${PREFIX}/bin/${SCRIPTS}
 
-uninstall:
-	rm -f ${DESTDIR}${PREFIX}/bin/${SCRIPTS}
+# FIXME: FOR LOOP
+#uninstall:
 
 clean:
 	rm -f ${DIST}.tar.gz

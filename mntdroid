@@ -1,9 +1,23 @@
 #!/bin/sh
 
 MTPT="/mnt/droid"
+f_umnt=0
+
+while getopts u arg; do
+case "${arg}" in
+	u) f_umnt=1 ;;
+	*) echo "usage: ${0##*/} [-u]" 1>&2 && exit 1 ;;
+esac
+done
 
 n=$(simple-mtpfs -l 2>/dev/null | dmenu -i -p "Available devices" | cut -f1 -d':')
-mkdir -p "${MTPT}/${n}"
-simple-mtpfs --device "${n}" -o allow_other "${MTPT}/${n}" | dmenu -p "Check" >/dev/null
-simple-mtpfs --device "${n}" -o allow_other "${MTPT}/${n}" &&
-echo "Android device mounted to: ${MTPT}/${n}" | nfy
+if [ ${f_umnt} -ne 1 ]; then
+	mkdir -p "${MTPT}/${n}"
+	simple-mtpfs --device "${n}" -o allow_other "${MTPT}/${n}" | dmenu -p "Check" >/dev/null
+	simple-mtpfs --device "${n}" -o allow_other "${MTPT}/${n}" &&
+	echo "Mounted: ${MTPT}/${n}" | nfy
+else
+	umount "${MTPT}/${n}"
+	rm -rf "${MTPT}/${n}"
+	echo "Unmounted: ${MTPT}/${n}" | nfy
+fi
