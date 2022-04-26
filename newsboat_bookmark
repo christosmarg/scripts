@@ -1,3 +1,0 @@
-#!/bin/sh
-
-printf "%s\t%s\n" "$1" "$2" | expand -t8 >> "${HOME}/shit/playlist"

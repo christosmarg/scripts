@@ -1,53 +1,56 @@
 .POSIX:
 
-SCRIPTS = ausplit \
-	  autocomp \
-	  backup \
-	  batnfy \
-	  doccomp \
-	  docprev \
-	  extr \
-	  fontupd \
-	  irssi_torconf \
-	  mntdroid \
-	  namefmt \
-	  newsboat_bookmark \
-	  passget \
-	  push \
-	  rssread \
-	  screencast \
-	  se \
-	  setscreens \
-	  sysact \
-	  tag \
-	  unix \
-	  upd \
-	  vdq \
-	  vds \
-	  vmstart \
-	  vmstop \
-	  walset \
-	  wttr
+TARGS = ausplit \
+	autocomp \
+	backup \
+	batnfy \
+	doccomp \
+	docprev \
+	extr \
+	fontupd \
+	irssi_torconf \
+	mntdroid \
+	namefmt \
+	passget \
+	push \
+	rssread \
+	screencast \
+	se \
+	setscreens \
+	sysact \
+	tag \
+	unix \
+	upd \
+	vdq \
+	vds \
+	vmstart \
+	vmstop \
+	walset \
+	wttr
 
 PREFIX = /usr/local
 
-all: ${SCRIPTS}
-	chmod +x ${SCRIPTS}
+all: ${TARGS}
+	chmod +x ${TARGS}
 
 dist:
 	mkdir -p ${DIST}
-	cp -R ${SCRIPTS} ${DIST}
+	cp -R ${TARGS} ${DIST}
 	tar -cf ${DIST}.tar ${DIST}
 	gzip ${DIST}.tar
 	rm -rf ${DIST}
 
 install: all
 	mkdir -p ${DESTDIR}${PREFIX}/bin
-	cp -f ${SCRIPTS} ${DESTDIR}${PREFIX}/bin
-	chmod 755 ${DESTDIR}${PREFIX}/bin/${SCRIPTS}
+	cp -f ${TARGS} ${DESTDIR}${PREFIX}/bin
+	for targ in ${TARGS} ; do \
+		chmod 755 ${DESTDIR}${PREFIX}/bin/$${targ} ; \
+	done
 
-# FIXME: FOR LOOP
-#uninstall:
+uninstall:
+	for targ in ${TARGS} ; do \
+		rm -f ${DESTDIR}${PREFIX}/bin/$${targ} ; \
+	done
 
 clean:
 	rm -f ${DIST}.tar.gz
