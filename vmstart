@@ -2,7 +2,8 @@
 
 usage()
 {
-	echo "usage: ${0##*/} [-u] [-c cpu] [-C com] [-d disk] [-i img] [-m mem] [-t tap] name" 1>&2
+	echo "usage: ${0##*/} [-uv] [-c cpu] [-C com] [-d disksiz] [-g grub_bootdrv]" 1>&2
+	echo "               [-G grub_bootdir] [-i img] [-m mem] [-t tap] name" 1>&2
 	exit 1
 }
 
@@ -10,17 +11,20 @@ cpu="2"
 mem="2G"
 disk="disk.img"
 tap="tap0"
+vnc="no"
 
-# TODO: opt: disname, lpc, xhci
-while getopts c:C:d:i:m:t:u arg; do
+while getopts c:C:d:g:G:i:m:t:uv arg; do
 case "${arg}" in
 	c) cpu="${OPTARG}" ;;
 	C) com="${OPTARG}" ;;
 	d) disksiz="${OPTARG}" ;;
+	g) grubdrv="${OPTARG}" ;;
+	G) grubdir="${OPTARG}" ;;
 	i) img="${OPTARG}" ;;
 	m) mem="${OPTARG}" ;;
 	t) tap="${OPTARG}" ;;
 	u) uefi="-l bootrom,/usr/local/share/uefi-firmware/BHYVE_UEFI.fd" ;;
+	v) vnc="yes" ;;
 	*) usage ;;
 esac
 done
@@ -32,15 +36,28 @@ test -z "${name}" && usage
 test -n "${disksiz}" && truncate -s "${disksiz}" ${disk}
 ifconfig "${tap}" up
 
-bhyve -c ${cpu} -m ${mem} -wH \
-        -s 0,hostbridge \
-        `test -n "${img}" && echo "-s 3,ahci-cd,${img}"` \
-        -s 4,ahci-hd,${disk} \
-        -s 5,virtio-net,${tap} \
-        -s 29,fbuf,tcp=0.0.0.0:5900,w=800,h=600,wait \
-        -s 30,xhci,tablet \
-        -s 31,lpc \
-	`test -n "${com}" && echo "-l com1,${com}"` \
-        `test -n "${uefi}" && echo ${uefi}` \
-        ${name}
+if [ -n "${grubdrv}" ]; then
+	echo "(hd0) disk.img" > device.map
+	test -n "${img}" && echo "(cd0) ${img}" >> device.map
+	grub-bhyve \
+		-m device.map \
+		-r ${grubdrv} \
+		`test -n ${grubdir} && echo "-d ${grubdir}"` \
+		-M ${mem} \
+		${name}
+fi
 
+bhyve \
+	-wHAP \
+	-c ${cpu} \
+	-m ${mem} \
+	-s 0,hostbridge \
+	`test -n "${img}" && echo "-s 3,ahci-cd,${img}"` \
+	-s 4,ahci-hd,${disk} \
+	-s 5,virtio-net,${tap} \
+	`test ${vnc} = "yes" && echo "-s 29,fbuf,tcp=0.0.0.0:5900,wait"` \
+	-s 30,xhci,tablet \
+	-s 31,lpc \
+	`test -n "${com}" && echo "-l com1,${com}"` \
+	`test -n "${uefi}" && echo ${uefi}` \
+	${name}
