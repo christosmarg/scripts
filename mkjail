@@ -1,0 +1,9 @@
+#!/bin/sh
+
+test $# -ne 1 && echo "usage: ${0##*/} jail" 1>&2; exit
+
+# TODO: edit rc.conf and jail.conf
+
+mkdir -p /usr/local/jail/${1}
+bsdinstall jail /usr/local/jail/${1}
+service jail start ${1}
