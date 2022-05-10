@@ -15,4 +15,4 @@ case "${arg}" in
                 exit 1 ;;
 esac
 done
-cat ${QUEUE} | awk '{print $1}' | xargs mpv
+mpv $(awk '{print $1}' ${QUEUE})

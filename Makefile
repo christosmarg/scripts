@@ -4,11 +4,13 @@ TARGS = ausplit \
 	autocomp \
 	backup \
 	batnfy \
+	deljail \
 	doccomp \
 	docprev \
 	extr \
 	fontupd \
 	irssi_torconf \
+	mkjail \
 	mntdroid \
 	namefmt \
 	passget \

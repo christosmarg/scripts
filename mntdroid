@@ -10,11 +10,12 @@ case "${arg}" in
 esac
 done
 
-n=$(simple-mtpfs -l 2>/dev/null | dmenu -i -p "Available devices" | cut -f1 -d':')
+test -z $(jmtpfs -l | sed 1d) && echo "No devices found" | nfy && exit 1
+devno=$(jmtpfs -l | sed 1d | dmenu -i -p "Available devices" | cut -f1 -d':')
 if [ ${f_umnt} -ne 1 ]; then
 	mkdir -p "${MTPT}/${n}"
-	simple-mtpfs --device "${n}" -o allow_other "${MTPT}/${n}" | dmenu -p "Check" >/dev/null
-	simple-mtpfs --device "${n}" -o allow_other "${MTPT}/${n}" &&
+	jmtpfs --device "${n}" -o allow_other "${MTPT}/${n}" | dmenu -p "Check" >/dev/null
+	jmtpfs --device "${n}" -o allow_other "${MTPT}/${n}" &&
 	echo "Mounted: ${MTPT}/${n}" | nfy
 else
 	umount "${MTPT}/${n}"

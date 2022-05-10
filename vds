@@ -11,4 +11,4 @@ case "${arg}" in
                 exit 1 ;;
 esac
 done
-cat ${PLAYLIST} | dmenu -l 30 | awk '{print $1}' | xargs mpv
+mpv $(cat ${PLAYLIST} | dmenu -l 30 | awk '{print $1}')
