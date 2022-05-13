@@ -10,15 +10,19 @@ case "${arg}" in
 esac
 done
 
-test -z $(jmtpfs -l | sed 1d) && echo "No devices found" | nfy && exit 1
-devno=$(jmtpfs -l | sed 1d | dmenu -i -p "Available devices" | cut -f1 -d':')
 if [ ${f_umnt} -ne 1 ]; then
-	mkdir -p "${MTPT}/${n}"
-	jmtpfs --device "${n}" -o allow_other "${MTPT}/${n}" | dmenu -p "Check" >/dev/null
-	jmtpfs --device "${n}" -o allow_other "${MTPT}/${n}" &&
-	echo "Mounted: ${MTPT}/${n}" | nfy
+	avail="$(jmtpfs -l | sed 1,2d)"
+	test -z "${avail}" && echo "No devices found" | nfy && exit 1
+	dev="$(jmtpfs -l | sed '1,2d' | dmenu -i -p "Available devices" |
+		sed 's/,//g' | awk '{print $1","$2}')"
+	mp="${MTPT}/$(echo ${dev} | cut -f1 -d',')"
+	mkdir -p "${mp}"
+	jmtpfs -device="${dev}" -o allow_other "${mp}" |
+	dmenu -p "Tap allow on your phone" || exit 1
+
+	jmtpfs -device="${dev}" -o allow_other "${mp}" && echo "Mounted: ${mp}" | nfy
 else
-	umount "${MTPT}/${n}"
-	rm -rf "${MTPT}/${n}"
-	echo "Unmounted: ${MTPT}/${n}" | nfy
+	mp="${MTPT}/$(ls ${MTPT} | dmenu -i -p "Unmount device")"
+	umount "${mp}" && echo "Unmounted: ${mp}" | nfy
+	rm -rf "${mp}"
 fi
