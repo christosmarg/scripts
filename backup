@@ -1,5 +1,43 @@
 #!/bin/sh
 
+main()
+{
+	f_incr=0	# Incremental backup
+	f_snap=0	# Renew snapshots in case they already exist
+
+	while getopts ir arg; do
+	case "${arg}" in
+		i) f_incr=1 ;;
+		r) f_snap=1 ;;
+		*) usage ;;
+	esac
+	done
+	shift $((OPTIND - 1))
+
+	test ${#} -ne 2 && usage
+
+	src_pool="${1}"
+	dst_pool="${2}"
+
+	pool_exists "${src_pool}"
+	pool_exists "${dst_pool}"
+
+	new_snap="$(date '+%Y%m%d')"
+	src_last_snap=$(last_snap "${src_pool}")
+	dst_last_snap=$(last_snap "${dst_pool}")
+	nsnaps=$(zfs list -t snapshot -o name ${dst_pool} | sed 1d | wc -l)
+
+	delete_existing_snap "${src_pool}" "${src_last_snap}"
+	zfs snapshot -r ${src_pool}@${new_snap}
+
+	if [ ${f_incr} -eq 1 ]; then
+		zfs send -RI ${src_pool}@${dst_last_snap} ${src_pool}@${new_snap} |
+		pv | zfs recv -Fu ${dst_pool}
+	else
+		zfs send -R ${src_pool}@${new_snap} | pv | zfs recv -Fu ${dst_pool}
+	fi
+}
+
 usage()
 {
 	echo "usage: ${0##*/} [-ir] src[/set] dst[/set]" 1>&2
@@ -37,39 +75,4 @@ delete_existing_snap()
 	fi
 }
 
-f_incr=0	# Incremental backup
-f_snap=0	# Renew snapshots in case they already exist
-
-while getopts ir arg; do
-case "${arg}" in
-	i) f_incr=1 ;;
-	r) f_snap=1 ;;
-	*) usage ;;
-esac
-done
-shift $((OPTIND - 1))
-
-test ${#} -ne 2 && usage
-
-src_pool="${1}"
-dst_pool="${2}"
-
-pool_exists "${src_pool}"
-pool_exists "${dst_pool}"
-
-new_snap="$(date +%Y%m%d)"
-src_last_snap=$(last_snap "${src_pool}")
-dst_last_snap=$(last_snap "${dst_pool}")
-nsnaps=$(zfs list -t snapshot -o name ${dst_pool} | sed 1d | wc -l)
-
-delete_existing_snap "${src_pool}" "${src_last_snap}"
-zfs snapshot -r ${src_pool}@${new_snap}
-
-# Make sure dst has more than 1 snapshots before we delete anything.
-#test ${nsnaps} -le 1 || delete_existing_snap "${dst_pool}" "${dst_last_snap}"
-
-if [ ${f_incr} -eq 1 ]; then
-	zfs send -RI ${src_pool}@${dst_last_snap} ${src_pool}@${new_snap} | pv | zfs recv -Fu ${dst_pool}
-else
-	zfs send -R ${src_pool}@${new_snap} | pv | zfs recv -Fu ${dst_pool}
-fi
+main ${@}

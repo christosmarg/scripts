@@ -22,6 +22,6 @@ cd "${dir}" || exit 1
 
 case "${ext}" in
 	md)	pandoc ${file} --pdf-engine=xelatex -V mainfont=Arial -o "${base}.pdf" ;;
-	tex)	pdflatex ${file} ;;
-		#rm -f *.aux *.log *.out *.bcf *.run.xml *.bbl *.blg *-blx.bib ;;
+	tex)	pdflatex ${file}
+		rm -f *.aux *.log *.out *.bcf *.run.xml *.bbl *.blg *-blx.bib ;;
 esac

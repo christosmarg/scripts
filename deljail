@@ -1,6 +1,6 @@
 #!/bin/sh
 
-test $# -ne 1 && echo "usage: ${0##*/} jail" 1>&2; exit
+test $# -ne 1 && echo "usage: ${0##*/} jail" && exit 1
 
 service jail stop ${1}
 chflags -R noschg /usr/local/jail/${1}

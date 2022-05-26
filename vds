@@ -2,12 +2,10 @@
 
 PLAYLIST="${HOME}/shit/playlist"
 QUEUE="$(vdq -f)"
-while getopts p:q arg; do
+while getopts p: arg; do
 case "${arg}" in
         p)      PLAYLIST="${OPTARG}" ;;
-        q)      vdq -a "$(cat ${PLAYLIST} | dmenu -l 30)"
-                exit 0 ;;
-        *)      echo "usage: ${0##*/} [-q] [-p playlist]" 1>&2
+        *)      echo "usage: ${0##*/} [-p playlist]" 1>&2
                 exit 1 ;;
 esac
 done
