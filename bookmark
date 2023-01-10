@@ -32,7 +32,7 @@ bmk_add()
 
 bmk_fmt()
 {
-	for i in $(find ${BMK_DIR}); do
+	for i in $(find ${BMK_DIR} | sed 1d); do
 		sed 's/   */\t/' < ${i} | column -ts $'\t' > ${i}.tmp
 		mv -f ${i}.tmp ${i}
 	done
