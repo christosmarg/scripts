@@ -2,7 +2,7 @@
 
 # FIXME: trim random symbols
 case $1 in
-	www)	src="${HOME}/src/margiolis.net/"
+	www)	src="${HOME}/src/margiolis.net/public/"
 		dst="master@margiolis.net:/var/www/htdocs/margiolis.net"
 		;;
 	ftp)	src="${2}"
@@ -17,14 +17,7 @@ case $1 in
 	desk)	src="${2}"
 		dst="pleb:${3}"
 		;;
-	old)	src="${2}"
-		dst="old:${3}"
-		;;
-	foo)	src="${2}"
-		dst="foo:${3}"
-		;;
-	# add disk, storage, all
-	*) echo "usage: ${0##*/} {www | ftp | vps | lap | desk | old | foo} src dst" 1>&2 && exit 1 ;;
+	*) echo "usage: ${0##*/} {www | ftp | vps | lap | desk} src dst" 1>&2 && exit 1 ;;
 esac
 test -z "${src}" && echo "${0##*/}: src is empty" 1>&2 && exit 1
 test -z "${dst}" && echo "${0##*/}: dest is empty" 1>&2 && exit 1

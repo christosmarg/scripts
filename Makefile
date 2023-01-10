@@ -4,6 +4,7 @@ TARGS = ausplit \
 	autocomp \
 	backup \
 	batnfy \
+	bookmark \
 	deljail \
 	doccomp \
 	docprev \
