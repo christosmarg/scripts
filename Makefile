@@ -11,7 +11,6 @@ TARGS = ausplit \
 	fontupd \
 	irssi_torconf \
 	mntdroid \
-	namefmt \
 	passget \
 	push \
 	rssread \

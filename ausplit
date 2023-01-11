@@ -11,13 +11,14 @@ main()
 	# The extension must exist in `tag`.
 	ext="${1#*.}"
 
-	xread "Album/book title: " album
-	xread "Artist/author: " author
-	xread "Publication year: " year
+	read -erp "Album/book title: " album
+	read -erp "Artist/author: " author
+	read -erp "Publication year: " year
 
 	namefmt="$(fmt_name "${album}")"
 	mkdir -p "${namefmt}" || exit 1
 
+	# FIXME
 	while read -r line; do
 		end="$(echo "${line}" | cut -d' ' -f1)"
 		test -n "${start}" && split_file
@@ -34,11 +35,6 @@ main()
 usage()
 {
 	echo "usage: ${0##*/} audio timecode_file" 1>&2 && exit 1
-}
-
-xread()
-{
-	printf "%s" "${1}" && read -r ${2}
 }
 
 fmt_name()

@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# FIXME: trim random symbols
 case $1 in
 	www)	src="${HOME}/src/margiolis.net/public/"
 		dst="master@margiolis.net:/var/www/htdocs/margiolis.net"
@@ -22,6 +21,5 @@ esac
 test -z "${src}" && echo "${0##*/}: src is empty" 1>&2 && exit 1
 test -z "${dst}" && echo "${0##*/}: dest is empty" 1>&2 && exit 1
 
-# add directory error check
 read -erp "${0##*/}: transfer '${src}' to '${dst}' (y/N)? " act
 test "${act}" = "y" && rsync -Purv --delete-after "${src}" "${dst}"

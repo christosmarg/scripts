@@ -1,6 +1,0 @@
-#!/bin/sh
-
-# FIXME: give path/s from command line
-for file in $(find .); do
-	mv ${file} $(echo ${file} | tr '-' '_')
-done
