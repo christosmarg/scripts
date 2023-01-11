@@ -5,7 +5,7 @@ main()
 	f_incr=0	# Incremental backup
 	f_snap=0	# Renew snapshots in case they already exist
 
-	while getopts ir arg; do
+	while getopts "ir" arg; do
 	case "${arg}" in
 		i) f_incr=1 ;;
 		r) f_snap=1 ;;

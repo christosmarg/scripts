@@ -13,7 +13,7 @@ disk="disk.img"
 tap="tap0"
 vnc="no"
 
-while getopts c:C:d:g:G:i:m:t:uv arg; do
+while getopts "c:C:d:g:G:i:m:t:uv" arg; do
 case "${arg}" in
 	c) cpu="${OPTARG}" ;;
 	C) com="${OPTARG}" ;;
@@ -38,11 +38,11 @@ ifconfig "${tap}" up
 
 if [ -n "${grubdrv}" ]; then
 	echo "(hd0) disk.img" > device.map
-	test -n "${img}" && echo "(cd0) ${img}" >> device.map
+	${img:+(cd0) ${img}} >> device.map
 	grub-bhyve \
 		-m device.map \
 		-r ${grubdrv} \
-		`test -n ${grubdir} && echo "-d ${grubdir}"` \
+		${grubdir:+-d ${grubdir}} \
 		-M ${mem} \
 		${name}
 fi
@@ -52,12 +52,12 @@ bhyve \
 	-c ${cpu} \
 	-m ${mem} \
 	-s 0,hostbridge \
-	`test -n "${img}" && echo "-s 3,ahci-cd,${img}"` \
+	${img:+-s 3,ahci-cd,${img}} \
 	-s 4,ahci-hd,${disk} \
 	-s 5,virtio-net,${tap} \
 	`test ${vnc} = "yes" && echo "-s 29,fbuf,tcp=0.0.0.0:5900,wait"` \
 	-s 30,xhci,tablet \
 	-s 31,lpc \
-	`test -n "${com}" && echo "-l com1,${com}"` \
-	`test -n "${uefi}" && echo ${uefi}` \
+	${com:+-l com1,${com}} \
+	${uefi:+${uefi}} \
 	${name}

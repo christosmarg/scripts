@@ -8,7 +8,7 @@ usage()
 
 tap="tap0"
 
-while getopts t: arg; do
+while getopts "t:" arg; do
 case "${arg}" in
 	t) tap="${OPTARG}" ;;
 	*) usage ;;

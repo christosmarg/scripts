@@ -2,7 +2,7 @@
 
 PLAYLIST="${HOME}/shit/playlist"
 
-while getopts p: arg; do
+while getopts "p:" arg; do
 case "${arg}" in
         p)      PLAYLIST="${OPTARG}" ;;
         *)      echo "usage: ${0##*/} [-p playlist]" 1>&2

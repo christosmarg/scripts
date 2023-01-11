@@ -8,7 +8,7 @@ usage()
 	exit 1
 }
 
-while getopts "a:t:A:n:N:d:g:c:f:" arg; do
+while getopts "a:t:A:n:N:d:g:c:" arg; do
 case "${arg}" in
 	a) artist="${OPTARG}" ;;
 	t) title="${OPTARG}" ;;
@@ -18,14 +18,13 @@ case "${arg}" in
 	d) date="${OPTARG}" ;;
 	g) genre="${OPTARG}" ;;
 	c) comment="${OPTARG}" ;;
-	f) file="${OPTARG}" ;;
 	*) usage ;;
 esac
 done
 shift $((OPTIND - 1))
 
 file="${1}"
-test ! -f "${file}" && echo "${0##*/}: file not found" && usage
+test ! -f "${file}" && echo "${0##*/}: file not found: ${file}" && usage
 
 test -z "${title}" && read -erp "Title: " title
 test -z "${artist}" && read -erp "Artist: " artist
@@ -39,12 +38,14 @@ temp="$(mktemp)"
 cp -f "${file}" "${temp}"
 ffmpeg \
 	-i "${temp}" \
-	-map 0 -y -codec copy \
+	-nostdin \
+	-map 0 -y -c copy \
 	-metadata title="${title}" \
 	-metadata album="${album}" \
 	-metadata artist="${artist}" \
 	-metadata track="${track}${total:+/"${total}"}" \
 	${date:+-metadata date="${date}"} \
 	${genre:+-metadata genre="${genre}"} \
-	${comment:+-metadata comment="${comment}"} "${file}"
+	${comment:+-metadata comment="${comment}"} \
+	"${file}"
 rm -f ${temp}

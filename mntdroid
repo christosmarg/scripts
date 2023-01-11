@@ -3,7 +3,7 @@
 MTPT="/mnt/droid"
 f_umnt=0
 
-while getopts u arg; do
+while getopts "u" arg; do
 case "${arg}" in
 	u) f_umnt=1 ;;
 	*) echo "usage: ${0##*/} [-u]" 1>&2 && exit 1 ;;

@@ -40,7 +40,7 @@ bmk_fmt()
 	done
 }
 
-while getopts af arg; do
+while getopts "af" arg; do
 case "${arg}" in
 	a)	bmk_getfile
 		bmk_add

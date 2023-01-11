@@ -77,7 +77,7 @@ usage()
 	exit 1
 }
 
-while getopts id:n: arg; do
+while getopts "id:n:" arg; do
 case "${arg}" in
 	i) sjail_init; exit 0 ;;
 	d) sjail_del "${OPTARG}"; exit 0 ;;
