@@ -1,9 +1,9 @@
 #!/bin/sh
 
 ffmpeg -y \
-    -f x11grab \
-    -s $(xrandr | grep "connected primary" | awk '{print $4}' | sed 's/+0+0//') \
-    -i :0.0 \
-    -f oss -i /dev/dsp -filter:a "asetpts=N/SR/TB" \
-    -c:v libx264 -r 30 -c:a mp3 \
-    ${1}
+	-f x11grab \
+	-s $(xrandr | grep "connected primary" | awk '{print $4}' | sed 's/+0+0//') \
+	-i :0.0 \
+	-f oss -i /dev/dsp -filter:a "asetpts=N/SR/TB" \
+	-c:v libx264 -r 30 -c:a mp3 \
+	${1}

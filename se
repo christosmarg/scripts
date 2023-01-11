@@ -1,3 +1,4 @@
 #!/bin/sh
 
-find /home/christos/src/scripts | grep -v '\.git' | fzf | xargs -r ${EDITOR}
+find /home/christos/src/scripts | sed 1d | grep -v '\.git' | sort | fzf |
+xargs -r ${EDITOR}

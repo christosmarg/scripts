@@ -1,6 +1,7 @@
 #!/bin/sh
 
 PLAYLIST="${HOME}/shit/playlist"
+
 while getopts p: arg; do
 case "${arg}" in
         p)      PLAYLIST="${OPTARG}" ;;

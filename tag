@@ -36,28 +36,20 @@ test -z "${title}" && xread "Title: " title
 test -z "${artist}" && xread "Artist: " artist
 test -z "${album}" && xread "Album: " album
 test -z "${track}" && xread "Track number: " track
+test -z "${total}" && xread "Total tracks in album: " total
+test -z "${date}" && xread "Date: " date
+test -z "${genre}" && xread "Genre: " genre
 
-info="Title=${title}
-Artist=${artist}
-Album=${album}
-Track=${track}
-Total=${total}
-Date=${date}
-Genre=${genre}
-Comment=${comment}"
-
-echo "${info}"
-
-case "${file}" in
-	*.ogg)	echo "${info}" | vorbiscomment -w "${file}" ;;
-	*.opus)	echo "${info}" | opustags -i -S "${file}" ;;
-	*.mp3)	eyeD3 -Q --remove-all \
-			-a "${artist}" \
-			-A "${album}" \
-			-t "${title}" \
-			-n "${track}" \
-			-N "${total}" \
-			-Y "${date}" \
-			"${file}" ;;
-	*)	echo "${0##*/}: file type not implemented yet" ;;
-esac
+temp="$(mktemp)"
+cp -f "${file}" "${temp}"
+ffmpeg \
+	-i "${temp}" \
+	-map 0 -y -codec copy \
+	-metadata title="${title}" \
+	-metadata album="${album}" \
+	-metadata artist="${artist}" \
+	-metadata track="${track}${total:+/"${total}"}" \
+	${date:+-metadata date="${date}"} \
+	${genre:+-metadata genre="${genre}"} \
+	${comment:+-metadata comment="${comment}"} "${file}"
+rm -f ${temp}

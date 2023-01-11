@@ -1,8 +1,10 @@
 #!/bin/sh
 
-export DISPLAY=":0.0" # cron cannot open the display without this.
 perc=$(sysctl -n hw.acpi.battery.life)
 charg=$(sysctl -n hw.acpi.battery.state)
+
+export DISPLAY=":0.0" # cron cannot open the display without this.
+
 if [ ${perc} -le 10 ] && [ ${charg} -ne 2 ]; then
 	echo "Low battery" | nfy
 elif [ ${perc} -ge 99 ] && [ ${charg} -eq 2 ]; then

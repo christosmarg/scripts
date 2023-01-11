@@ -5,13 +5,11 @@ TARGS = ausplit \
 	backup \
 	batnfy \
 	bookmark \
-	deljail \
 	doccomp \
 	docprev \
 	extr \
 	fontupd \
 	irssi_torconf \
-	mkjail \
 	mntdroid \
 	namefmt \
 	passget \
@@ -20,6 +18,7 @@ TARGS = ausplit \
 	screencast \
 	se \
 	setscreens \
+	sjail \
 	sysact \
 	tag \
 	unix \

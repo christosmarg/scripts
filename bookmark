@@ -10,6 +10,8 @@ bmk_getfile()
 	while [ -d ${bmkfile} ]; do
 		bmkfile="$(
 			find ${bmkfile} -maxdepth 1 |
+			sed 1d |
+			sort |
 			dmenu -i -l 10 -p "Choose a file"
 		)" || exit 1
 	done
@@ -52,4 +54,6 @@ esac
 done
 
 bmk_getfile
-cat ${bmkfile} | dmenu -i -l 50 | awk '{print $1}' | xargs -r xdotool type
+
+cat ${bmkfile} | dmenu -i -l 50 | awk '{print $1}' |
+xargs -r xdotool type --delay 0
