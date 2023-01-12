@@ -1,6 +1,7 @@
 .POSIX:
 
-TARGS = ausplit \
+TARGS = audl \
+	ausplit \
 	autocomp \
 	backup \
 	batnfy \
@@ -11,6 +12,7 @@ TARGS = ausplit \
 	fontupd \
 	irssi_torconf \
 	mntdroid \
+	tmsync \
 	passget \
 	push \
 	rssread \

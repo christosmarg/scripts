@@ -1,0 +1,3 @@
+#!/bin/sh
+
+ntpdate -v -b 'in.pool.ntp.org'
