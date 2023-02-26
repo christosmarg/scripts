@@ -7,11 +7,23 @@ usage()
 	exit 1
 }
 
+err()
+{
+	echo "${0##*/} ${@}" 1>&2
+	exit 1
+}
+
 cpu="2"
 mem="2G"
 disk="disk.img"
 tap="tap0"
 vnc="no"
+uefifile="/usr/local/share/uefi-firmware/BHYVE_UEFI.fd"
+
+# TODO initial setup?
+# TODO virtio-blk
+# TODO vnc wait?
+# TODO does grub work properly?
 
 while getopts "c:C:d:g:G:i:m:t:uv" arg; do
 case "${arg}" in
@@ -23,7 +35,7 @@ case "${arg}" in
 	i) img="${OPTARG}" ;;
 	m) mem="${OPTARG}" ;;
 	t) tap="${OPTARG}" ;;
-	u) uefi="-l bootrom,/usr/local/share/uefi-firmware/BHYVE_UEFI.fd" ;;
+	u) uefi="-l bootrom,${uefifile}" ;;
 	v) vnc="yes" ;;
 	*) usage ;;
 esac
@@ -33,8 +45,12 @@ shift $((OPTIND - 1))
 name="${1}"
 test -z "${name}" && usage
 
+test ! -f ${uefifile} && \
+err "${uefifile} not found. Install $(pkg search uefi-edk | awk '{print $1}')"
+
+ifconfig "${tap}" up || exit 1
+
 test -n "${disksiz}" && truncate -s "${disksiz}" ${disk}
-ifconfig "${tap}" up
 
 if [ -n "${grubdrv}" ]; then
 	echo "(hd0) disk.img" > device.map

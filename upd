@@ -1,6 +1,6 @@
 #!/bin/sh
 
-case $1 in
+case "${1}" in
 	www)	src="${HOME}/src/margiolis.net/public/"
 		dst="master@margiolis.net:/var/www/htdocs/margiolis.net"
 		;;
@@ -16,10 +16,10 @@ case $1 in
 	desk)	src="${2}"
 		dst="pleb:${3}"
 		;;
-	*) echo "usage: ${0##*/} {www | ftp | vps | lap | desk} src dst" 1>&2 && exit 1 ;;
+	*)	echo "usage: ${0##*/} {www | ftp | vps | lap | desk} src dst" 1>&2
+		exit 1
+		;;
 esac
-test -z "${src}" && echo "${0##*/}: src is empty" 1>&2 && exit 1
-test -z "${dst}" && echo "${0##*/}: dest is empty" 1>&2 && exit 1
 
 read -erp "${0##*/}: transfer '${src}' to '${dst}' (y/N)? " act
 test "${act}" = "y" && rsync -Purv --delete-after "${src}" "${dst}"

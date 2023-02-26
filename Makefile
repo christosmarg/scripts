@@ -5,6 +5,7 @@ TARGS = audl \
 	autocomp \
 	backup \
 	batnfy \
+	buildtrace \
 	bookmark \
 	doccomp \
 	docprev \

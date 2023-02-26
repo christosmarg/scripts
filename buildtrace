@@ -1,0 +1,8 @@
+#!/bin/sh
+
+kldunload dtraceall
+cd /usr/src
+cd cddl/lib/libdtrace && make all install && cd -
+cd cddl/usr.sbin/dtrace && make all install && cd -
+cd sys/modules/dtrace/ && make all install && cd -
+kldload dtraceall

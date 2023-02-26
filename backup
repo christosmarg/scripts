@@ -27,7 +27,7 @@ main()
 	dst_last_snap=$(last_snap "${dst_pool}")
 	nsnaps=$(zfs list -t snapshot -o name ${dst_pool} | sed 1d | wc -l)
 
-	delete_existing_snap "${src_pool}" "${src_last_snap}"
+	delete_existing_snap "${dst_pool}" "${dst_last_snap}"
 	zfs snapshot -r ${src_pool}@${new_snap}
 
 	if [ ${f_incr} -eq 1 ]; then
