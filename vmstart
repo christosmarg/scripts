@@ -20,9 +20,9 @@ tap="tap0"
 vnc="no"
 uefifile="/usr/local/share/uefi-firmware/BHYVE_UEFI.fd"
 
-# TODO initial setup?
+# TODO man page?
+# TODO merge vmstart and vmstop to `vm <start/stop> ...`? (find new name in this case)
 # TODO virtio-blk
-# TODO vnc wait?
 # TODO does grub work properly?
 
 while getopts "c:C:d:g:G:i:m:t:uv" arg; do
@@ -36,7 +36,7 @@ case "${arg}" in
 	m) mem="${OPTARG}" ;;
 	t) tap="${OPTARG}" ;;
 	u) uefi="-l bootrom,${uefifile}" ;;
-	v) vnc="yes" ;;
+	v) vnc="-s 29,fbuf,tcp=0.0.0.0:5900,wait" ;;
 	*) usage ;;
 esac
 done
@@ -71,7 +71,7 @@ bhyve \
 	${img:+-s 3,ahci-cd,${img}} \
 	-s 4,ahci-hd,${disk} \
 	-s 5,virtio-net,${tap} \
-	`test ${vnc} = "yes" && echo "-s 29,fbuf,tcp=0.0.0.0:5900,wait"` \
+	${vnc:+${vnc}} \
 	-s 30,xhci,tablet \
 	-s 31,lpc \
 	${com:+-l com1,${com}} \

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+usage()
+{
+	echo "usage: ${0##*/} address commit..." 1>&2
+	exit 1
+}
+
+test $# -ge 2 || usage
+addr="${1}"
+shift 1
+git send-email \
+	--subject-prefix="${PWD##*/}][PATCH" \
+	--to=${addr} ${@}

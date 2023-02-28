@@ -11,6 +11,7 @@ TARGS = audl \
 	docprev \
 	extr \
 	fontupd \
+	gitmail \
 	irssi_torconf \
 	mntdroid \
 	tmsync \
