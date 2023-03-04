@@ -1,4 +1,4 @@
 #!/bin/sh
 
-QUEUE="${HOME}/shit/queue"
+QUEUE="${HOME}/n/queue"
 mpv $(awk '{print $1}' ${QUEUE})

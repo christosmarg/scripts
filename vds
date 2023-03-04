@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PLAYLIST="${HOME}/shit/playlist"
+PLAYLIST="${HOME}/n/playlist"
 
 while getopts "p:" arg; do
 case "${arg}" in

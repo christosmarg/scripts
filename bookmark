@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # XXX: make this an env variable?
-BMK_DIR="${HOME}/shit/bookmarks/"
+BMK_DIR="${HOME}/n/bookmarks/"
 
 bmk_getfile()
 {

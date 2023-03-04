@@ -28,8 +28,7 @@ TARGS = audl \
 	upd \
 	vdq \
 	vds \
-	vmstart \
-	vmstop \
+	vmb \
 	walset \
 	wttr
 
