@@ -11,10 +11,11 @@ uefifile="/usr/local/share/uefi-firmware/BHYVE_UEFI.fd"
 
 usage()
 {
-	echo "usage: ${0##*/} start [-uv] [-c cpu] [-C com] [-d disksiz]" 1>&2
+	echo "usage: ${0##*/} start [-Duv] [-c cpu] [-C com] [-d disksiz]" 1>&2
 	echo "               [-g grub_bootdrv] [-G grub_bootdir] [-i img]" 1>&2
 	echo "               [-m mem] [-t tap] vmname" 1>&2
 	echo "       ${0##*/} stop [-t tap] vmname" 1>&2
+	echo "       -D: attach gdb" 1>&2
 	echo "       -u: run in uefi mode" 1>&2
 	echo "       -v: start a vnc server" 1>&2
 	exit 1
@@ -28,11 +29,12 @@ err()
 
 vmb_start()
 {
-	while getopts "c:C:d:g:G:i:m:t:uv" arg; do
+	while getopts "c:C:d:Dg:G:i:m:t:uv" arg; do
 	case "${arg}" in
 		c) cpu="${OPTARG}" ;;
 		C) com="${OPTARG}" ;;
 		d) disksiz="${OPTARG}" ;;
+		D) dbgport="1234" ;;
 		g) grubdrv="${OPTARG}" ;;
 		G) grubdir="${OPTARG}" ;;
 		i) img="${OPTARG}" ;;
@@ -84,6 +86,7 @@ vmb_start()
 		-s 31,lpc \
 		${com:+-l com1,${com}} \
 		${uefi:+${uefi}} \
+		${dbgport:+-G ${dbgport}} \
 		${name}
 }
 
