@@ -20,16 +20,11 @@ sysvshm = new;
 " >> /etc/jail.conf
 
 	echo "
-jail_enable=\"YES\"
-jail_parallel_start=\"YES\"
-jail_reverse_stop=\"YES\"
-
 if_bridge_load=\"YES\"
 if_epair_load=\"YES\"
 
 cloned_interfaces=\"bridge0 epair0\"
 ifconfig_bridge0=\"addm re0 addm epair0a up\"
-ifconfig_epair0a=\"up\"
 " >> /etc/rc.conf
 
 	echo "
@@ -38,15 +33,27 @@ add include \$devfsrules_hide_all
 add include \$devfsrules_unhide_basic
 add include \$devfsrules_unhide_login
 add path 'bpf*' unhide
-" >> /etc/devfs.conf
+" >> /etc/devfs.rules
 
 	/etc/netstart
 	service devfs restart
 }
 
+sjail_jail_exists()
+{
+	test -d "/usr/local/jail/${name}"
+}
+
+sjail_jail_running()
+{
+	test -n "$(jls -j ${name} 2>/dev/null | sed 1d)"
+}
+
 sjail_new()
 {
-	local name="${1}"
+	name="${1}"
+
+	test -z "${name}" && usage
 
 	echo "
 ${name} {
@@ -55,35 +62,114 @@ ${name} {
 }
 " >> /etc/jail.conf
 
+	sjail_jail_exists && err "\"${name}\" exists already"
+	sjail_jail_running && err "\"${name}\" is running"
+
 	mkdir -p /usr/local/jail
 	mkdir -p /usr/local/jail/${name}
 	bsdinstall jail /usr/local/jail/${name}
-	service jail start ${name}
 }
 
 sjail_del()
 {
-	local name="${1}"
+	name="${1}"
 
-	service jail stop ${name}
+	test -z "${name}" && usage
+	sjail_jail_exists || err "\"${name}\" doesn't exist"
+	sjail_jail_running && err "\"${name}\" is running"
+
 	chflags -R noschg /usr/local/jail/${name}
 	rm -rf /usr/local/jail/${name}
-	sed "/${name} {/,/}/d" /etc/jail.conf
+	sed -i '' "/${name} {/,/}/d" /etc/jail.conf
+}
+
+sjail_start()
+{
+	xflag="no"
+
+	while getopts "x" arg; do
+	case "${arg}" in
+		x) xflag="yes" ;;
+		*) usage ;;
+	esac
+	done
+	shift $((OPTIND - 1))
+
+	name="${1}"
+	test -z "${name}" && usage
+	sjail_jail_exists || err "\"${name}\" doesn't exist"
+	sjail_jail_running && err "\"${name}\" is running"
+
+	ifconfig epair0a destroy
+	ifconfig epair0 create
+	ifconfig bridge0 addm epair0a
+	ifconfig epair0a up
+	if [ -z $(service -e | grep jail) ]; then
+		service jail onestart ${name}
+	else
+		service jail start ${name}
+	fi
+
+	if [ ${xflag} = "yes" ]; then
+		xhost +
+		mount_nullfs /tmp/.X11-unix /usr/local/jail/${name}/tmp/.X11-unix
+	fi
+}
+
+sjail_stop()
+{
+	xflag="no"
+
+	while getopts "x" arg; do
+	case "${arg}" in
+		x) xflag="yes" ;;
+		*) usage ;;
+	esac
+	done
+	shift $((OPTIND - 1))
+
+	name="${1}"
+	test -z "${name}" && usage
+	sjail_jail_exists || err "\"${name}\" doesn't exist"
+	sjail_jail_running || err "\"${name}\" is not running"
+
+	if [ ${xflag} = "yes" ]; then
+		xhost -
+		umount /usr/local/jail/${name}/tmp/.X11-unix
+	fi
+
+	if [ -z $(service -e | grep jail) ]; then
+		service jail onestop ${name}
+	else
+		service jail stop ${name}
+	fi
+	ifconfig epair0a destroy
 }
 
 usage()
 {
-	echo "usage: ${0##*/} [-i] [-n jail_name] [-d jail_name]" 1>&2
+	echo "usage: ${0##*/} init" 1>&2
+	echo "       ${0##*/} new jail" 1>&2
+	echo "       ${0##*/} del jail" 1>&2
+	echo "       ${0##*/} start [-x] jail" 1>&2
+	echo "       ${0##*/} stop [-x] jail" 1>&2
 	exit 1
 }
 
-while getopts "id:n:" arg; do
-case "${arg}" in
-	i) sjail_init; exit 0 ;;
-	d) sjail_del "${OPTARG}"; exit 0 ;;
-	n) sjail_new "${OPTARG}"; exit 0 ;;
+err()
+{
+	echo "${0##*/}: ${@}" 1>&2
+	exit 1
+}
+
+# TODO handle multiple jails (make new epairs for each jail)?
+cmd="${1}"
+shift 1
+case "${cmd}" in
+	init) sjail_init ;;
+	del) sjail_del ${@} ;;
+	new) sjail_new ${@} ;;
+	start) sjail_start ${@} ;;
+	stop) sjail_stop ${@} ;;
 	*) usage ;;
 esac
-done
-
-usage
