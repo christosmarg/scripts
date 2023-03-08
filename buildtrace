@@ -1,8 +1,35 @@
 #!/bin/sh
 
-kldunload dtraceall
+build()
+{
+	cd cddl/lib/libdtrace && make -j$(sysctl -n hw.ncpu) all && cd -
+	cd cddl/usr.sbin/dtrace && make -j$(sysctl -n hw.ncpu) all && cd -
+	cd sys/modules/dtrace/ && make -j$(sysctl -n hw.ncpu) all && cd -
+}
+
+clean()
+{
+	cd cddl/lib/libdtrace && make clean cleandepend && cd -
+	cd cddl/usr.sbin/dtrace && make clean cleandepend && cd -
+	cd sys/modules/dtrace/ && make clean cleandepend && cd -
+}
+
+install()
+{
+	kldunload dtraceall
+	cd cddl/lib/libdtrace && make -j$(sysctl -n hw.ncpu) install && cd -
+	cd cddl/usr.sbin/dtrace && make -j$(sysctl -n hw.ncpu) install && cd -
+	cd sys/modules/dtrace/ && make -j$(sysctl -n hw.ncpu) install \
+		KMODDIR=/boot/kernel && cd -
+	kldload dtraceall
+}
+
 cd /usr/src
-cd cddl/lib/libdtrace && make all install && cd -
-cd cddl/usr.sbin/dtrace && make all install && cd -
-cd sys/modules/dtrace/ && make all install KMODDIR=/boot/kernel && cd -
-kldload dtraceall
+while getopts "bci" arg; do
+case "${arg}" in
+	b) build ;;
+	c) clean ;;
+	i) install ;;
+	*) echo "usage: ${0##*/} [bci]" 1>&2; exit 1
+esac
+done

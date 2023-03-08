@@ -15,9 +15,9 @@ usage()
 	echo "               [-g grub_bootdrv] [-G grub_bootdir] [-i img]" 1>&2
 	echo "               [-m mem] [-t tap] vmname" 1>&2
 	echo "       ${0##*/} stop [-t tap] vmname" 1>&2
-	echo "       -D: attach gdb" 1>&2
+	echo "       -D: pause at first instruction and wait for gdb" 1>&2
 	echo "       -u: run in uefi mode" 1>&2
-	echo "       -v: start a vnc server" 1>&2
+	echo "       -v: wait until the vnc client has started" 1>&2
 	exit 1
 }
 
@@ -34,14 +34,14 @@ vmb_start()
 		c) cpu="${OPTARG}" ;;
 		C) com="${OPTARG}" ;;
 		d) disksiz="${OPTARG}" ;;
-		D) dbgport="1234" ;;
+		D) dbgw="w" ;;
 		g) grubdrv="${OPTARG}" ;;
 		G) grubdir="${OPTARG}" ;;
 		i) img="${OPTARG}" ;;
 		m) mem="${OPTARG}" ;;
 		t) tap="${OPTARG}" ;;
 		u) uefi="-l bootrom,${uefifile}" ;;
-		v) vnc="-s 29,fbuf,tcp=0.0.0.0:5900,wait" ;;
+		v) vncwait=",wait" ;;
 		*) usage ;;
 	esac
 	done
@@ -50,13 +50,17 @@ vmb_start()
 	name="${1}"
 	test -z "${name}" && usage
 
-	test ! -f ${uefifile} && \
-	err "uefi file \"${uefifile}\" not found." \
-	"Install $(pkg search uefi-edk2 | awk '{print $1}')"
+	if [ -n "${uefi}" ]; then
+		test ! -f ${uefifile} && \
+		err "uefi file \"${uefifile}\" not found." \
+		"Install $(pkg search uefi-edk2 | awk '{print $1}')"
+	fi
 
-	test ! -f ${grubdrv} && \
-	err "grub drive \"${grubdrv}\" not found." \
-	"Install $(pkg search grub2-bhyve | awk '{print $1}')"
+	if [ -n "${grubdrv}" ] || [ -n "${grubdir}" ]; then
+		test ! "$(pkg info | awk '{print $1}' | grep grub2-bhyve)" &&
+		err "grub driver not found." \
+		"Install $(pkg search grub2-bhyve | awk '{print $1}')"
+	fi
 
 	ifconfig "${tap}" up || exit 1
 
@@ -81,12 +85,12 @@ vmb_start()
 		${img:+-s 3,ahci-cd,${img}} \
 		-s 4,ahci-hd,${disk} \
 		-s 5,virtio-net,${tap} \
-		${vnc:+${vnc}} \
+		-s 29,fbuf,tcp=0.0.0.0:5900${vncwait} \
 		-s 30,xhci,tablet \
 		-s 31,lpc \
+		-G ${dbgw}1234 \
 		${com:+-l com1,${com}} \
 		${uefi:+${uefi}} \
-		${dbgport:+-G ${dbgport}} \
 		${name}
 }
 
