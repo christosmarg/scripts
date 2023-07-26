@@ -1,10 +1,12 @@
 #!/bin/sh
 
+dflags="DEBUG_FLAGS=-g"
+
 build()
 {
-	cd cddl/lib/libdtrace && make -j$(sysctl -n hw.ncpu) all && cd -
-	cd cddl/usr.sbin/dtrace && make -j$(sysctl -n hw.ncpu) all && cd -
-	cd sys/modules/dtrace/ && make -j$(sysctl -n hw.ncpu) all && cd -
+	cd cddl/lib/libdtrace && make -j$(sysctl -n hw.ncpu) ${dflags} all && cd -
+	cd cddl/usr.sbin/dtrace && make -j$(sysctl -n hw.ncpu) ${dflags} all && cd -
+	cd sys/modules/dtrace/ && make -j$(sysctl -n hw.ncpu) ${dflags} all && cd -
 }
 
 clean()
@@ -16,12 +18,10 @@ clean()
 
 install()
 {
-	kldunload dtraceall
-	cd cddl/lib/libdtrace && make -j$(sysctl -n hw.ncpu) install && cd -
-	cd cddl/usr.sbin/dtrace && make -j$(sysctl -n hw.ncpu) install && cd -
-	cd sys/modules/dtrace/ && make -j$(sysctl -n hw.ncpu) install \
+	cd cddl/lib/libdtrace && make -j$(sysctl -n hw.ncpu) ${dflags} install && cd -
+	cd cddl/usr.sbin/dtrace && make -j$(sysctl -n hw.ncpu) ${dflags} install && cd -
+	cd sys/modules/dtrace/ && make -j$(sysctl -n hw.ncpu) ${dflags} install \
 		KMODDIR=/boot/kernel && cd -
-	kldload dtraceall
 }
 
 cd /usr/src

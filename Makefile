@@ -14,7 +14,6 @@ TARGS = audl \
 	gitmail \
 	irssi_torconf \
 	mntdroid \
-	tmsync \
 	passget \
 	push \
 	rssread \
