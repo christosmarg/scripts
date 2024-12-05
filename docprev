@@ -7,8 +7,9 @@ usage()
 
 test ${#} -eq 0 && usage
 base="${1%.*}"
+ext="${1##*.}"
 
-case "${1}" in
-	*.html) setsid -f "${BROWSER}" "${base}.html" ;;
-	*.tex) setsid -f xdg-open "${base}.pdf" ;;
+case "${ext}" in
+	html) setsid -f "${BROWSER}" "${base}.html" ;;
+	tex|md) setsid -f xdg-open "${base}.pdf" ;;
 esac

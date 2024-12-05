@@ -5,14 +5,13 @@ TARGS = audl \
 	autocomp \
 	backup \
 	batnfy \
+	bright \
 	buildtrace \
 	bookmark \
 	doccomp \
 	docprev \
 	extr \
-	fontupd \
 	gitmail \
-	irssi_torconf \
 	mntdroid \
 	passget \
 	push \
@@ -23,11 +22,10 @@ TARGS = audl \
 	sjail \
 	sysact \
 	tag \
-	unix \
+	tmuxsession \
 	upd \
 	vdq \
 	vds \
-	vmb \
 	walset \
 	wttr
 

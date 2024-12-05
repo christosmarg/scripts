@@ -10,13 +10,7 @@ case "${1}" in
 	vps)	src="${2}"
 		dst="master@margiolis.net:${3}"
 		;;
-	lap)	src="${2}"
-		dst="tpad:${3}"
-		;;
-	desk)	src="${2}"
-		dst="pleb:${3}"
-		;;
-	*)	echo "usage: ${0##*/} {www | ftp | vps | lap | desk} src dst" 1>&2
+	*)	echo "usage: ${0##*/} {www | ftp | vps} src dst" 1>&2
 		exit 1
 		;;
 esac

@@ -1,4 +1,5 @@
 #!/bin/sh
 
 QUEUE="${HOME}/n/queue"
+
 mpv $(awk '{print $1}' ${QUEUE})

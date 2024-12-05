@@ -1,0 +1,6 @@
+#!/bin/sh
+
+bright=$(backlight -q -f /dev/backlight/backlight0)
+test $# -eq 0 && echo ${bright} && exit
+test ${bright} -le 10 -a "$(echo ${1} | grep "^[+|-]")" == "-" && exit
+backlight -f /dev/backlight/backlight0 "${1}"

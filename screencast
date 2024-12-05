@@ -2,8 +2,12 @@
 
 ffmpeg -y \
 	-f x11grab \
-	-s $(xrandr | grep "connected primary" | awk '{print $4}' | sed 's/+0+0//') \
+	-s 1920x1080 \
 	-i :0.0 \
-	-f oss -i /dev/dsp -filter:a "asetpts=N/SR/TB" \
-	-c:v libx264 -r 30 -c:a mp3 \
+	-r 30 \
+	-f oss -i /dev/dsp \
+	-c:v libx264 \
+	-c:a mp3 \
 	${1}
+	#-f oss -i /dev/dsp.loop \
+	#-filter_complex:a "amix=inputs=2,asetpts=N/SR/TB" \

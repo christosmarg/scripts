@@ -1,0 +1,9 @@
+#!/bin/sh
+
+tmux new-session -s 'dev' \; \
+	send-keys 'cd /usr/src' C-m \; \
+	new-window \; \
+	split-window -h \; send-keys 'cd /usr/src && git branch' C-m \; \
+	new-window 'neomutt' \; \
+	split-window -h 'irssi' \; \
+	new-window 'calcurse' \;

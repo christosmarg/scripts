@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# ffmpeg and my `tag` script required.
 main()
 {
 	test ${#} -ne 2 && usage
@@ -23,7 +22,7 @@ main()
 		test -n "${start}" && split_file
 		title="$(echo "${line}" | cut -d' ' -f2-)"
 		titlefmt="$(fmt_name "${title}")"
-		track="$((track+1))"
+		track="$((track + 1))"
 		start="${end}"
 	done < "${tfile}"
 

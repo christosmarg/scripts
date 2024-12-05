@@ -2,7 +2,7 @@
 
 xrandr \
 	--output DVI-I-0 \
-	--mode 1280x1024 \
+	--mode 1920x1080 \
 	--pos 1920x56 \
 	--rotate normal \
 	--output HDMI-0 \

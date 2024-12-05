@@ -25,28 +25,15 @@ bmk_add()
 	if grep -q "^${url}" ${bmkfile}; then
 		echo "Already bookmarked" | nfy
 	else
-		printf "%s\t%s\n" \
-			"${url}" "$(dmenu -p "Bookmark name" </dev/null)" >> \
-			${bmkfile}
+		echo ${url} >> ${bmkfile}
 		echo "Bookmark added" | nfy
 	fi
-}
-
-bmk_fmt()
-{
-	for i in $(find ${BMK_DIR} | sed 1d); do
-		sed 's/   */\t/' < ${i} | column -ts $'\t' > ${i}.tmp
-		mv -f ${i}.tmp ${i}
-	done
 }
 
 while getopts "af" arg; do
 case "${arg}" in
 	a)	bmk_getfile
 		bmk_add
-		bmk_fmt
-		exit 0 ;;
-	f)	bmk_fmt
 		exit 0 ;;
 	*)	echo "usage: ${0##*/} [-af]" 1>&2
 		exit 1 ;;
