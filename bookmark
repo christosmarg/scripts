@@ -22,7 +22,7 @@ bmk_add()
 {
 	local url=$(xclip -o)
 
-	if grep -q "^${url}" ${bmkfile}; then
+	if grep -qx "^${url}" ${bmkfile}; then
 		echo "Already bookmarked" | nfy
 	else
 		echo ${url} >> ${bmkfile}
@@ -35,7 +35,7 @@ case "${arg}" in
 	a)	bmk_getfile
 		bmk_add
 		exit 0 ;;
-	*)	echo "usage: ${0##*/} [-af]" 1>&2
+	*)	echo "usage: ${0##*/} [-a]" 1>&2
 		exit 1 ;;
 esac
 done

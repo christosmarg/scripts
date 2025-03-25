@@ -18,7 +18,6 @@ TARGS = audl \
 	rssread \
 	screencast \
 	se \
-	setscreens \
 	sjail \
 	sysact \
 	tag \

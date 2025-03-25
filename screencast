@@ -2,7 +2,7 @@
 
 ffmpeg -y \
 	-f x11grab \
-	-s 1920x1080 \
+	-s 2256x1504 \
 	-i :0.0 \
 	-r 30 \
 	-f oss -i /dev/dsp \
